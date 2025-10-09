@@ -1,5 +1,5 @@
 # About
-simple Telegram bot that can recommend random movies of 19 different categories providing the recommended movie trailer if exists.
+Telegram bot that can recommend random movies from 19 different categories providing the recommended movie trailer if exists.
 
 # Tech Stack
 -   Python
