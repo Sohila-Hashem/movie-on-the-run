@@ -35,15 +35,16 @@ logger = logging.getLogger(__name__)
 
 # Error Handler
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    logger.exception('Unhandled exception while processing update "%s": %s', update, context.error)
+    logger.exception(
+        'Unhandled exception while processing update "%s": %s', update, context.error
+    )
     message = getattr(update, "effective_message", None) if update is not None else None
     if message is not None:
         await message.reply_text("Something went wrong. Please try again later!")
 
 
-def build_app():
+def build_app(bot_token: str):
     """Build and configure the Telegram bot application."""
-    bot_token = os.getenv("BOT_API_TOKEN")
 
     app = ApplicationBuilder().token(bot_token).build()
 
@@ -103,7 +104,7 @@ if __name__ == "__main__":
     bot_token = os.getenv("BOT_API_TOKEN")
     webhook_url = os.getenv("WEBHOOK_URL")
 
-    app = build_app()
+    app = build_app(bot_token)
 
     if os.getenv("ENV") == "production":
         # running the bot through a webhook technique
