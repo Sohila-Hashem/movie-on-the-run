@@ -39,65 +39,74 @@ async def error(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("Something went wrong. Please try again later!")
 
 
-BOT_TOKEN = os.getenv("BOT_API_TOKEN")
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")
+def build_app():
+    """Build and configure the Telegram bot application."""
+    bot_token = os.getenv("BOT_API_TOKEN")
+    
+    app = ApplicationBuilder().token(bot_token).build()
 
-app = ApplicationBuilder().token(BOT_TOKEN).build()
+    # adding handlers for commands
+    app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CallbackQueryHandler(menu_command, pattern="menu"))
+    app.add_handler(CommandHandler("menu", menu_command))
 
-# adding handlers for commands
-app.add_handler(CommandHandler("start", start_command))
-app.add_handler(CallbackQueryHandler(menu_command, pattern="menu"))
-app.add_handler(CommandHandler("menu", menu_command))
-
-movieServiceHandlers = MovieServiceHandlers(
-    MovieService(
-        MovieAPIServiceManager.get_instance(
-            APIClient(
-                base_url="https://api.themoviedb.org/3/",
-                headers={"accept": "application/json"},
-                params={
-                    "api_key": os.getenv("MOVIES_API_KEY"),
-                    "language": "en-US",
-                    "with_original_language": "en",
-                    "include_adult": "false",
-                    "include_video": "true",
-                    "sort_by": "popularity.desc",
-                    "vote_average.gte": 7,
-                    "release_date.gte": "2011-01-01",
-                },
+    movieServiceHandlers = MovieServiceHandlers(
+        MovieService(
+            MovieAPIServiceManager.get_instance(
+                APIClient(
+                    base_url="https://api.themoviedb.org/3/",
+                    headers={"accept": "application/json"},
+                    params={
+                        "api_key": os.getenv("MOVIES_API_KEY"),
+                        "language": "en-US",
+                        "with_original_language": "en",
+                        "include_adult": "false",
+                        "include_video": "true",
+                        "sort_by": "popularity.desc",
+                        "vote_average.gte": 7,
+                        "release_date.gte": "2011-01-01",
+                    },
+                )
             )
-        )
-    ),
-    TrailerService(
-        TrailerAPIServiceManager.get_instance(
-            APIClient(
-                base_url="https://api.themoviedb.org/3/",
-                headers={"accept": "application/json"},
-                params={"api_key": os.getenv("MOVIES_API_KEY"), "language": "en-US"},
+        ),
+        TrailerService(
+            TrailerAPIServiceManager.get_instance(
+                APIClient(
+                    base_url="https://api.themoviedb.org/3/",
+                    headers={"accept": "application/json"},
+                    params={"api_key": os.getenv("MOVIES_API_KEY"), "language": "en-US"},
+                )
             )
-        )
-    ),
-)
-# Movies handlers
-for category in MovieCategoryMap.get_supported_categories():
-    handler = movieServiceHandlers.suggest_movie(category)
-    app.add_handler(CommandHandler(category, handler))
-    app.add_handler(CallbackQueryHandler(handler, pattern=re.escape(category)))
+        ),
+    )
+    # Movies handlers
+    for category in MovieCategoryMap.get_supported_categories():
+        handler = movieServiceHandlers.suggest_movie(category)
+        app.add_handler(CommandHandler(category, handler))
+        app.add_handler(CallbackQueryHandler(handler, pattern=re.escape(category)))
 
-# adding handlers for messages
-app.add_handler(MessageHandler(filters.TEXT, handle_messages))
+    # adding handlers for messages
+    app.add_handler(MessageHandler(filters.TEXT, handle_messages))
 
-# adding error handler
-app.add_error_handler(error)
-# run app
+    # adding error handler
+    app.add_error_handler(error)
+    
+    return app
+
+
 if __name__ == "__main__":
+    bot_token = os.getenv("BOT_API_TOKEN")
+    webhook_url = os.getenv("WEBHOOK_URL")
+    
+    app = build_app()
+    
     if os.getenv("ENV") == "production":
         # running the bot through a webhook technique
         app.run_webhook(
             listen="0.0.0.0",
             port=int(os.environ.get("PORT", 10000)),
-            url_path=BOT_TOKEN,
-            webhook_url=f"{WEBHOOK_URL}/telegram",
+            url_path=bot_token,
+            webhook_url=f"{webhook_url}/telegram",
         )
     else:
         # running the bot through a polling technique
