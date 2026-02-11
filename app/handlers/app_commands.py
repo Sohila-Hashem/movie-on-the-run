@@ -5,7 +5,7 @@ from app.services.Movies.movies_service import MovieCategoryMap
 def get_categories_keyboard():
     categories = MovieCategoryMap.get_supported_categories()
     keyboard = [
-        [InlineKeyboardButton(category.capitalize(), callback_data=category)]
+        [InlineKeyboardButton(category.replace('_', ' ').title(), callback_data=category)]
         for category in categories
     ]
     return InlineKeyboardMarkup(keyboard)
