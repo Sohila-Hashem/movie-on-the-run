@@ -59,8 +59,9 @@ if __name__ == '__main__':
     )
     # Movies handlers
     for category in MovieCategoryMap.get_supported_categories():
-        app.add_handler(CommandHandler(category, movieServiceHandlers.suggest_movie(category)))
-        app.add_handler(CallbackQueryHandler(movieServiceHandlers.suggest_movie(category), pattern=f'^{category}$'))
+        handler = movieServiceHandlers.suggest_movie(category)
+        app.add_handler(CommandHandler(category, handler))
+        app.add_handler(CallbackQueryHandler(handler, pattern=f'^{category}$'))
     
     # adding handlers for messages
     app.add_handler(MessageHandler(filters.TEXT, handle_messages))
