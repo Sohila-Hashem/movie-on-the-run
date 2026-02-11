@@ -1,7 +1,7 @@
 import random
 import traceback
 
-from telegram import Update,ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import  ContextTypes
 
 from app.utils.utils import get_movie_response
