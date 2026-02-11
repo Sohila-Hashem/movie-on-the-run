@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 load_dotenv('config/.env')
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
+import re
 
 from app.services.Movies.movies_service import MovieService, MovieCategoryMap
 from app.services.Trailers.trailer_service import TrailerService
@@ -30,8 +31,8 @@ if __name__ == '__main__':
 
     # adding handlers for commands
     app.add_handler(CommandHandler('start', start_command))
+    app.add_handler(CallbackQueryHandler(menu_command, pattern='menu'))
     app.add_handler(CommandHandler('menu', menu_command))
-    app.add_handler(CallbackQueryHandler(menu_command, pattern='^menu$'))
 
     movieServiceHandlers = MovieServiceHandlers(
         MovieService(MovieAPIServiceManager.get_instance(APIClient(
@@ -61,7 +62,7 @@ if __name__ == '__main__':
     for category in MovieCategoryMap.get_supported_categories():
         handler = movieServiceHandlers.suggest_movie(category)
         app.add_handler(CommandHandler(category, handler))
-        app.add_handler(CallbackQueryHandler(handler, pattern=f'^{category}$'))
+        app.add_handler(CallbackQueryHandler(handler, pattern=re.escape(category)))
     
     # adding handlers for messages
     app.add_handler(MessageHandler(filters.TEXT, handle_messages))

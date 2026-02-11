@@ -1,5 +1,6 @@
 import random
 import traceback
+import html
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import  ContextTypes
@@ -16,11 +17,11 @@ class MovieServiceHandlers:
     def suggest_movie(self, category): 
         async def suggest_movie_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             query = update.callback_query
+            message = update.effective_message
             if query:
                 await query.answer()
 
             try:
-                message = update.effective_message
                 await message.reply_text(f"fetching a {category} Movie for you...🚀")
                 category_id = MovieCategoryMap.get_category_id(category)
                 
@@ -43,7 +44,7 @@ class MovieServiceHandlers:
                         if filtered_movie_trailers and len(filtered_movie_trailers):
                             await message.reply_text("see a list of official trailers below")
                             links_html = "\n".join(
-                                f'<a href="https://www.youtube.com/watch?v={x["key"]}">{x["name"]}</a>'
+                                f'<a href="https://www.youtube.com/watch?v={x["key"]}">{html.escape(x["name"])}</a>'
                                 for x in filtered_movie_trailers
                             )
                             await message.reply_html(links_html)
@@ -59,7 +60,6 @@ class MovieServiceHandlers:
                 await message.reply_text("No movies were found for this category")
             except Exception as e:
                 print(f"something went wrong while executing suggest_movie_command: {traceback.format_exception(type(e), value=e, tb=e.__traceback__)}")
-                message = update.effective_message
                 if message:
                     await message.reply_text("Something went wrong. Please try again later :(")
 
