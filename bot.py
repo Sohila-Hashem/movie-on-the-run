@@ -111,6 +111,7 @@ if __name__ == "__main__":
         app.run_webhook(
             listen="0.0.0.0",
             port=int(os.environ.get("PORT", 10000)),
+            url_path="telegram",
             webhook_url=f"{webhook_url}/telegram",
         )
     else:
