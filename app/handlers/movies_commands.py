@@ -1,7 +1,8 @@
 import random
 import traceback
+import html
 
-from telegram import Update,ReplyKeyboardMarkup, KeyboardButton
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import  ContextTypes
 
 from app.utils.utils import get_movie_response
@@ -15,8 +16,13 @@ class MovieServiceHandlers:
 
     def suggest_movie(self, category): 
         async def suggest_movie_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            query = update.callback_query
+            message = update.effective_message
+            if query:
+                await query.answer()
+
             try:
-                await update.message.reply_text(f"fetching a {category} Movie for you...🚀")
+                await message.reply_text(f"fetching a {category} Movie for you...🚀")
                 category_id = MovieCategoryMap.get_category_id(category)
                 
                 category_total_pages = self.movie_service.get_page_count(category_id)
@@ -28,7 +34,7 @@ class MovieServiceHandlers:
                 if rand_page_movies_list:
                     random_movie = self.movie_service.get_random_movie(rand_page_movies_list)
 
-                    await update.message.reply_html(get_movie_response(random_movie))
+                    await message.reply_html(get_movie_response(random_movie))
 
                     movie_trailers = self.trailer_service.get_movie_trailers(random_movie["id"])
                     
@@ -36,20 +42,25 @@ class MovieServiceHandlers:
                         filtered_movie_trailers = self.trailer_service.filter_trailers(movie_trailers, 'YouTube')
 
                         if filtered_movie_trailers and len(filtered_movie_trailers):
-                            await update.message.reply_text("see a list of official trailers below")
-                            await update.message.reply_html(f"""
-                                {
-                                    list(map(lambda x: f'<a href="https://www.youtube.com/watch?v={x["key"]}">{x["name"]}</a>', filtered_movie_trailers))
-                                }
-                        """)
+                            await message.reply_text("see a list of official trailers below")
+                            links_html = "\n".join(
+                                f'<a href="https://www.youtube.com/watch?v={x["key"]}">{html.escape(x["name"])}</a>'
+                                for x in filtered_movie_trailers
+                            )
+                            await message.reply_html(links_html)
                     
-                    keyboard = [KeyboardButton(f"/{category}"), KeyboardButton(f"/menu")]
-                    await update.message.reply_text('Suggest another movie?', reply_markup=ReplyKeyboardMarkup([keyboard], resize_keyboard=True))
+                    keyboard = [
+                        [InlineKeyboardButton(f"Next {category} Movie 🎬", callback_data=category)],
+                        [InlineKeyboardButton("Menu 🏠", callback_data="menu")]
+                    ]
+                    reply_markup = InlineKeyboardMarkup(keyboard)
+                    await message.reply_text('What next?', reply_markup=reply_markup)
                     return
                 
-                await update.message.reply_text("No movies were found for this category")
+                await message.reply_text("No movies were found for this category")
             except Exception as e:
                 print(f"something went wrong while executing suggest_movie_command: {traceback.format_exception(type(e), value=e, tb=e.__traceback__)}")
-                await update.message.reply_text("Something went wrong. Please try again later :(")
+                if message:
+                    await message.reply_text("Something went wrong. Please try again later :(")
 
         return suggest_movie_command
