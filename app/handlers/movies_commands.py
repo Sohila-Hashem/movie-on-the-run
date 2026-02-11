@@ -42,11 +42,11 @@ class MovieServiceHandlers:
 
                         if filtered_movie_trailers and len(filtered_movie_trailers):
                             await message.reply_text("see a list of official trailers below")
-                            await message.reply_html(f"""
-                                {
-                                    list(map(lambda x: f'<a href="https://www.youtube.com/watch?v={x["key"]}">{x["name"]}</a>', filtered_movie_trailers))
-                                }
-                        """)
+                            links_html = "\n".join(
+                                f'<a href="https://www.youtube.com/watch?v={x["key"]}">{x["name"]}</a>'
+                                for x in filtered_movie_trailers
+                            )
+                            await message.reply_html(links_html)
                     
                     keyboard = [
                         [InlineKeyboardButton(f"Next {category} Movie 🎬", callback_data=category)],
