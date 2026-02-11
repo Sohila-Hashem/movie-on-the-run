@@ -18,12 +18,10 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.callback_query:
-        await update.callback_query.message.reply_text(
-            "What's your Movie choice for today 😀?",
-            reply_markup=get_categories_keyboard()
-        )
-    else:
-        await update.message.reply_text(
-            "What's your Movie choice for today 😀?",
-            reply_markup=get_categories_keyboard()
-        )
+        await update.callback_query.answer()
+
+    message = update.effective_message
+    await message.reply_text(
+        "What's your Movie choice for today 😀?",
+        reply_markup=get_categories_keyboard()
+    )
