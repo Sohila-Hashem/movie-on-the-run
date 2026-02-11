@@ -59,6 +59,8 @@ class MovieServiceHandlers:
                 await message.reply_text("No movies were found for this category")
             except Exception as e:
                 print(f"something went wrong while executing suggest_movie_command: {traceback.format_exception(type(e), value=e, tb=e.__traceback__)}")
-                await update.message.reply_text("Something went wrong. Please try again later :(")
+                message = update.effective_message
+                if message:
+                    await message.reply_text("Something went wrong. Please try again later :(")
 
         return suggest_movie_command
