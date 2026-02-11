@@ -36,7 +36,9 @@ logger = logging.getLogger(__name__)
 # Error Handler
 async def error(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logger.error(f'Update "{update}"\n caused error "{context.error}"')
-    await update.message.reply_text("Something went wrong. Please try again later!")
+    message = getattr(update, "effective_message", None) if update is not None else None
+    if message is not None:
+        await message.reply_text("Something went wrong. Please try again later!")
 
 
 def build_app():
