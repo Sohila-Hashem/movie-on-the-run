@@ -3,7 +3,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import  ContextTypes
 from app.services.Movies.movies_service import MovieCategoryMap
 
-@lru_cache(maxsize=1)
+@lru_cache()
 def get_categories_keyboard():
     categories = MovieCategoryMap.get_supported_categories()
     keyboard = [
