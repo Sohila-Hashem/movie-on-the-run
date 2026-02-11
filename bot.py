@@ -50,7 +50,7 @@ def build_app():
     app.add_handler(CallbackQueryHandler(menu_command, pattern="menu"))
     app.add_handler(CommandHandler("menu", menu_command))
 
-    movieServiceHandlers = MovieServiceHandlers(
+    movie_service_handlers = MovieServiceHandlers(
         MovieService(
             MovieAPIServiceManager.get_instance(
                 APIClient(
@@ -81,7 +81,7 @@ def build_app():
     )
     # Movies handlers
     for category in MovieCategoryMap.get_supported_categories():
-        handler = movieServiceHandlers.suggest_movie(category)
+        handler = movie_service_handlers.suggest_movie(category)
         app.add_handler(CommandHandler(category, handler))
         app.add_handler(CallbackQueryHandler(handler, pattern=re.escape(category)))
 
