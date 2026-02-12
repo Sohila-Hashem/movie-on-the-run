@@ -14,7 +14,7 @@ def get_categories_keyboard():
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Welcome to Movies4U bot, What's your Movie choice for today 😀?",
+        "Welcome to 'Movie on the Run' bot, What's your Movie choice for today 😀?",
         reply_markup=get_categories_keyboard()
     )
 
