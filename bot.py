@@ -11,11 +11,10 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 
-from app.services.Movies.movies_service import MovieService, MovieCategoryMap
-from app.services.Trailers.trailer_service import TrailerService
+from app.services.Movies.movies_service import MovieCategory
+from app.services.Movies.movies_api_service import MovieAPIService
 
-from app.services.Trailers.trailer_api_service import TrailerAPIServiceManager
-from app.services.Movies.movie_api_service import MovieAPIServiceManager
+from app.services.Trailers.trailers_api_service import TrailerAPIService
 
 from app.handlers.app_commands import menu_command, start_command
 from app.handlers.movies_commands import MovieServiceHandlers
@@ -24,7 +23,7 @@ from app.handlers.messages import handle_messages
 from app.utils.API_Client import APIClient
 from telegram import Update
 
-load_dotenv("config/.env")
+load_dotenv()
 
 # Enable logging
 logging.basicConfig(
@@ -54,42 +53,40 @@ def build_app(bot_token: str):
     app.add_handler(CommandHandler("menu", menu_command))
 
     movie_service_handlers = MovieServiceHandlers(
-        MovieService(
-            MovieAPIServiceManager.get_instance(
-                APIClient(
-                    base_url="https://api.themoviedb.org/3/",
-                    headers={"accept": "application/json"},
-                    params={
-                        "api_key": os.getenv("MOVIES_API_KEY"),
-                        "language": "en-US",
-                        "with_original_language": "en",
-                        "include_adult": "false",
-                        "include_video": "true",
-                        "sort_by": "popularity.desc",
-                        "vote_average.gte": 7,
-                        "release_date.gte": "2011-01-01",
-                    },
-                )
+        MovieAPIService(
+            APIClient(
+                base_url="https://api.themoviedb.org/3/",
+                headers={"accept": "application/json"},
+                params={
+                    "api_key": os.getenv("MOVIES_API_KEY"),
+                    "language": "en-US",
+                    "with_original_language": "en",
+                    "include_adult": "false",
+                    "sort_by": "popularity.desc",
+                    "vote_average.gte": 6,
+                    "vote_count.gte": 50,
+                    "primary_release_date.gte": "1998-01-01",
+                },
             )
         ),
-        TrailerService(
-            TrailerAPIServiceManager.get_instance(
-                APIClient(
-                    base_url="https://api.themoviedb.org/3/",
-                    headers={"accept": "application/json"},
-                    params={
-                        "api_key": os.getenv("MOVIES_API_KEY"),
-                        "language": "en-US",
-                    },
-                )
+        TrailerAPIService(
+            APIClient(
+                base_url="https://api.themoviedb.org/3/",
+                headers={"accept": "application/json"},
+                params={
+                    "api_key": os.getenv("MOVIES_API_KEY"),
+                    "language": "en-US",
+                },
             )
         ),
     )
     # Movies handlers
-    for category in MovieCategoryMap.get_supported_categories():
+    for category in MovieCategory:
         handler = movie_service_handlers.suggest_movie(category)
-        app.add_handler(CommandHandler(category, handler))
-        app.add_handler(CallbackQueryHandler(handler, pattern=re.escape(category)))
+        app.add_handler(CommandHandler(category.name.lower(), handler))
+        app.add_handler(
+            CallbackQueryHandler(handler, pattern=re.escape(category.name.lower()))
+        )
 
     # adding handlers for messages
     app.add_handler(MessageHandler(filters.TEXT, handle_messages))
@@ -101,12 +98,10 @@ def build_app(bot_token: str):
 
 
 if __name__ == "__main__":
-    bot_token = os.getenv("BOT_API_TOKEN")
-    webhook_url = os.getenv("WEBHOOK_URL")
-
-    app = build_app(bot_token)
-
     if os.getenv("ENV") == "production":
+        webhook_url = os.getenv("WEBHOOK_URL")
+        bot_token = os.getenv("BOT_TOKEN_PROD")
+        app = build_app(bot_token)
         # running the bot through a webhook technique
         app.run_webhook(
             listen="0.0.0.0",
@@ -115,5 +110,7 @@ if __name__ == "__main__":
             webhook_url=f"{webhook_url}/telegram",
         )
     else:
+        bot_token = os.getenv("BOT_TOKEN_DEV")
+        app = build_app(bot_token)
         # running the bot through a polling technique
         app.run_polling()

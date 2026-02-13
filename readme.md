@@ -77,7 +77,7 @@ pip install -r requirements.txt
 5. Set up environment variables in a .env file to run project locally:
 
 ```bash
-BOT_API_TOKEN=your_telegram_bot_token
+BOT_TOKEN_DEV=your_telegram_bot_token
 ENV=development
 MOVIES_API_KEY=your_tmdb_api_key
 ```
@@ -88,7 +88,7 @@ MOVIES_API_KEY=your_tmdb_api_key
 python bot.py
 ```
 
-7. Open Telegram and start chatting with [@MovieOnTheRunBot](https://web.telegram.org/k/#@MovieOnTheRunBot)
+7. Open Telegram and start chatting with [@name_of_your_bot](https://web.telegram.org/k/#@name_of_your_bot)
 
 ## Roadmap / Features to Be Added
 
