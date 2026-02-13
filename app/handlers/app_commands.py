@@ -1,29 +1,34 @@
-from functools import lru_cache
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import  ContextTypes
-from app.services.Movies.movies_service import MovieCategoryMap
+from telegram import Update
+from telegram.ext import ContextTypes
+from app.utils.utils import get_categories_keyboard
 
-@lru_cache()
-def get_categories_keyboard():
-    categories = MovieCategoryMap.get_supported_categories()
-    keyboard = [
-        [InlineKeyboardButton(category.replace('_', ' ').title(), callback_data=category)]
-        for category in categories
-    ]
-    return InlineKeyboardMarkup(keyboard)
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Handles the start command.
+
+    Args:
+        update (Update): The update object.
+        context (ContextTypes.DEFAULT_TYPE): The context object.
+    """
     await update.message.reply_text(
         "Welcome to 'Movie on the Run' bot, What's your Movie choice for today 😀?",
-        reply_markup=get_categories_keyboard()
+        reply_markup=get_categories_keyboard(),
     )
 
+
 async def menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Handles the menu command.
+
+    Args:
+        update (Update): The update object.
+        context (ContextTypes.DEFAULT_TYPE): The context object.
+    """
     if update.callback_query:
         await update.callback_query.answer()
 
     message = update.effective_message
     await message.reply_text(
-        "What's your Movie choice for today 😀?",
-        reply_markup=get_categories_keyboard()
+        "What's your Movie choice for today 😀?", reply_markup=get_categories_keyboard()
     )
