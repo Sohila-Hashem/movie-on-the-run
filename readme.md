@@ -94,4 +94,4 @@ python bot.py
 
 - [ ] Include external links for movies
 - [ ] Support multi-language responses
-- [ ] Allow user preferences (e.g., specific rating, release date)
+- [ ] Allow user preferences (e.g., specific rating, release date, watch provider, language, people, region, country and etc)
